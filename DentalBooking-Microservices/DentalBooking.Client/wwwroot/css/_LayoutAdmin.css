@@ -1,0 +1,18 @@
+html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+.btn.active {
+    background-color: #fff;
+    color: #000;
+    border-color: #dee2e6;
+}

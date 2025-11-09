@@ -1,0 +1,123 @@
+﻿@model DentalBooking.Client.Models.ViewModels.Admin.ReportViewModel
+@{
+    ViewData["Title"] = "Reports";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-lg border-0 rounded-3">
+            <div class="card-header bg-dark text-white text-center py-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i> Reports
+                </h4>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="get" class="row mb-4 g-3">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Doctor</label>
+                        <select name="doctorId" class="form-select">
+                            <option value="">All</option>
+                            @foreach (var doc in Model.Doctors)
+                            {
+                                <option value="@doc.Id" selected="@(Model.DoctorId == doc.Id)">
+                                    @doc.Name
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Procedure</label>
+                        <select name="procedureId" class="form-select">
+                            <option value="">All</option>
+                            @foreach (var proc in Model.Procedures)
+                            {
+                                <option value="@proc.Id" selected="@(Model.ProcedureId == proc.Id)">
+                                    @proc.Name
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">From</label>
+                        <input type="date" name="from" class="form-control"
+                               value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">To</label>
+                        <input type="date" name="to" class="form-control"
+                               value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter"></i> Apply
+                        </button>
+                    </div>
+                </form>
+
+                @if (Model.Stats == null)
+                {
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle me-2"></i>No data available.
+                    </div>
+                }
+                else
+                {
+                    <div class="row text-center mb-4">
+                        <div class="col-md-4">
+                            <div class="card bg-light shadow-sm">
+                                <div class="card-body">
+                                    <h5>Total Bookings</h5>
+                                    <h3 class="text-primary">@Model.Stats.TotalBookings</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light shadow-sm">
+                                <div class="card-body">
+                                    <h5>Completed</h5>
+                                    <h3 class="text-success">@Model.Stats.Completed</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light shadow-sm">
+                                <div class="card-body">
+                                    <h5>Cancelled</h5>
+                                    <h3 class="text-danger">@Model.Stats.Cancelled</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.Stats.ByProcedure != null && Model.Stats.ByProcedure.Any())
+                    {
+                        <h5 class="mt-4">By Procedure</h5>
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Procedure</th>
+                                    <th>Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var kvp in Model.Stats.ByProcedure)
+                                {
+                                    <tr>
+                                        <td>@kvp.Key</td>
+                                        <td>@kvp.Value</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>

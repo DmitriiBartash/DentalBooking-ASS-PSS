@@ -1,0 +1,244 @@
+services:
+  auth_postgres:
+    image: postgres:16
+    container_name: dental_auth_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dental_auth_dev
+    ports:
+      - "5435:5432"
+    volumes:
+      - auth_pgdata:/var/lib/postgresql/data
+    networks:
+      - dental_net
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  doctor_postgres:
+    image: postgres:16
+    container_name: dental_doctor_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dental_doctor_dev
+    ports:
+      - "5436:5432"
+    volumes:
+      - doctor_pgdata:/var/lib/postgresql/data
+    networks:
+      - dental_net
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  booking_postgres:
+    image: postgres:16
+    container_name: dental_booking_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dental_booking_dev
+    ports:
+      - "5437:5432"
+    volumes:
+      - booking_pgdata:/var/lib/postgresql/data
+    networks:
+      - dental_net
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: dental_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - dental_net
+    restart: always
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  smtp4dev:
+    image: rnwood/smtp4dev
+    container_name: dental_smtp4dev
+    ports:
+      - "25:25"
+      - "37408:80"
+    networks:
+      - dental_net
+    restart: always
+
+  authservice:
+    build:
+      context: ./DentalBooking.AuthService
+      dockerfile: Dockerfile
+    container_name: dental_authservice
+    depends_on:
+      auth_postgres:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Postgres=Host=auth_postgres;Port=5432;Database=dental_auth_dev;Username=postgres;Password=postgres
+    ports:
+      - "7017:8080"
+    networks:
+      - dental_net
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  doctorservice:
+    build:
+      context: ./DentalBooking.DoctorService
+      dockerfile: Dockerfile
+    container_name: dental_doctorservice
+    depends_on:
+      doctor_postgres:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Postgres=Host=doctor_postgres;Port=5432;Database=dental_doctor_dev;Username=postgres;Password=postgres
+    ports:
+      - "7020:8080"
+    networks:
+      - dental_net
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  bookingservice:
+    build:
+      context: ./DentalBooking.BookingService
+      dockerfile: Dockerfile
+    container_name: dental_bookingservice
+    depends_on:
+      booking_postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Postgres=Host=booking_postgres;Port=5432;Database=dental_booking_dev;Username=postgres;Password=postgres
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
+    ports:
+      - "7025:8080"
+    networks:
+      - dental_net
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  notificationservice:
+    build:
+      context: ./DentalBooking.NotificationService
+      dockerfile: Dockerfile
+    container_name: dental_notificationservice
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      smtp4dev:
+        condition: service_started
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
+      - EmailSettings__SmtpServer=smtp4dev
+      - EmailSettings__SmtpPort=25
+      - EmailSettings__SenderAddress=noreply@dentalease.com
+      - EmailSettings__SenderName=DentalEase
+    ports:
+      - "7030:8080"
+    networks:
+      - dental_net
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 60s
+      timeout: 3s
+      retries: 5
+
+  gateway:
+    build:
+      context: ./DentalBooking.Gateway
+      dockerfile: Dockerfile
+    container_name: dental_gateway
+    depends_on:
+      - authservice
+      - doctorservice
+      - bookingservice
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Routes__Auth=http://dental_authservice:8080
+      - Routes__Doctor=http://dental_doctorservice:8080
+      - Routes__Booking=http://dental_bookingservice:8080
+    ports:
+      - "7000:8080"
+    networks:
+      - dental_net
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  client:
+    build:
+      context: ./DentalBooking.Client
+      dockerfile: Dockerfile
+    container_name: dental_client
+    depends_on:
+      - gateway
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ApiSettings__GatewayUrl=http://gateway:8080
+    ports:
+      - "7050:8080"
+    networks:
+      - dental_net
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  auth_pgdata:
+  doctor_pgdata:
+  booking_pgdata:
+  rabbitmq_data:
+
+networks:
+  dental_net:
+    driver: bridge

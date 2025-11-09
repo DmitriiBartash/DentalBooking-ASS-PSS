@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - DentalBooking (Admin)</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/fontawesome/css/all.min.css" />
+
+    <style>
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        .btn.active {
+            background-color: #fff;
+            color: #000;
+            border-color: #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+            <div class="container">
+                <a class="navbar-brand fw-bold" href="/Admin/Reports">DentalBooking - Admin</a>
+                <div class="collapse navbar-collapse">
+                    <ul class="navbar-nav ms-auto d-flex gap-2">
+                        <li class="nav-item">
+                            <a class="btn btn-outline-light btn-sm @(ViewData["ActivePage"] as string == "Reports" ? "active" : "")" href="/Admin/Reports">
+                                <i class="fas fa-chart-bar"></i> Reports
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-light btn-sm @(ViewData["ActivePage"] as string == "Doctors" ? "active" : "")" href="/Admin/Doctors">
+                                <i class="fas fa-user-md"></i> Doctors
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-light btn-sm @(ViewData["ActivePage"] as string == "Procedures" ? "active" : "")" href="/Admin/Procedures">
+                                <i class="fas fa-tooth"></i> Procedures
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-light btn-sm @(ViewData["ActivePage"] as string == "Bookings" ? "active" : "")" href="/Admin/Bookings">
+                                <i class="fas fa-calendar-alt"></i> Bookings
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <form method="post" asp-page="/Logout" class="d-inline">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container py-4">
+        @RenderBody()
+    </main>
+
+    <footer class="text-center text-muted py-3 border-top mt-auto">
+        <small>&copy; 2025 DentalBooking</small>
+    </footer>
+
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

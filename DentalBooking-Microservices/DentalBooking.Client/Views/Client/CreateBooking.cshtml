@@ -1,0 +1,150 @@
+﻿@model DentalBooking.Client.Models.ViewModels.Client.CreateBookingViewModel
+@{
+    ViewData["Title"] = "Create Booking";
+    Layout = "_LayoutClient";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-lg border-0 rounded-3">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-calendar-plus me-2"></i> Book a Procedure
+                </h4>
+            </div>
+
+            <div class="card-body p-4">
+                @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+                {
+                    <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>@Model.SuccessMessage
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>@Model.ErrorMessage
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <form asp-action="CreateBooking" method="post" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label asp-for="ProcedureId" class="form-label fw-bold">
+                            <i class="fas fa-tooth me-2"></i> Procedure
+                        </label>
+                        <select asp-for="ProcedureId" asp-items="Model.Procedures" class="form-select" required>
+                            <option value="">-- Select a procedure --</option>
+                        </select>
+                        <span asp-validation-for="ProcedureId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Date" class="form-label fw-bold">
+                                <i class="fas fa-calendar-day me-2"></i> Date
+                            </label>
+                            <input asp-for="Date" type="date" class="form-control" required />
+                            <span asp-validation-for="Date" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Time" class="form-label fw-bold">
+                                <i class="fas fa-clock me-2"></i> Time
+                            </label>
+                            <input asp-for="Time" type="time" class="form-control" step="1800" required />
+                            <span asp-validation-for="Time" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DoctorId" class="form-label fw-bold">
+                            <i class="fas fa-user-md me-2"></i> Available Doctor
+                        </label>
+
+                        <div id="doctor-info" class="alert alert-info py-2 small mb-2">
+                            Please select a procedure, date and time to see available doctors.
+                        </div>
+
+                        <select asp-for="DoctorId" asp-items="Model.AvailableDoctors" class="form-select" required>
+                            <option value="">-- Select a doctor --</option>
+                        </select>
+                        <span asp-validation-for="DoctorId" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-3">
+                        <i class="fas fa-check-circle me-2"></i> Confirm Booking
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const dateInput = document.querySelector("[name='Date']");
+            const timeInput = document.querySelector("[name='Time']");
+            const procedureInput = document.querySelector("[name='ProcedureId']");
+            const doctorSelect = document.querySelector("[name='DoctorId']");
+            const doctorInfo = document.getElementById("doctor-info");
+
+            const today = new Date().toISOString().split("T")[0];
+            dateInput.value = today;
+            timeInput.value = "09:00";
+
+            async function loadDoctors() {
+                const procedureId = procedureInput.value;
+                const date = dateInput.value;
+                const time = timeInput.value;
+
+                if (procedureId && date && time) {
+                    const start = new Date(date + "T" + time);
+                    if (start <= new Date()) {
+                        doctorInfo.textContent = "Please choose a future date and time.";
+                        doctorInfo.className = "alert alert-warning py-2 small mb-2";
+                        doctorSelect.innerHTML = `<option value="">-- Select a doctor --</option>`;
+                        return;
+                    }
+
+                    const url = `/Client/AvailableDoctors?procedureId=${procedureId}&start=${encodeURIComponent(start.toISOString())}`;
+                    const response = await fetch(url);
+
+                    doctorSelect.innerHTML = `<option value="">-- Select a doctor --</option>`;
+
+                    if (!response.ok) {
+                        doctorInfo.textContent = "Could not load doctors. Try again later.";
+                        doctorInfo.className = "alert alert-warning py-2 small mb-2";
+                        return;
+                    }
+
+                    const doctors = await response.json();
+
+                    if (doctors.length === 0) {
+                        doctorInfo.textContent = "No doctors available for the selected time.";
+                        doctorInfo.className = "alert alert-warning py-2 small mb-2";
+                    } else {
+                        doctorInfo.textContent = `Found ${doctors.length} doctor(s) available.`;
+                        doctorInfo.className = "alert alert-success py-2 small mb-2";
+                        doctors.forEach(d => {
+                            doctorSelect.innerHTML += `<option value="${d.id}">${d.fullName}</option>`;
+                        });
+                    }
+                } else {
+                    doctorInfo.textContent = "Please select a procedure, date and time to see available doctors.";
+                    doctorInfo.className = "alert alert-info py-2 small mb-2";
+                    doctorSelect.innerHTML = `<option value="">-- Select a doctor --</option>`;
+                }
+            }
+
+            procedureInput.addEventListener("change", loadDoctors);
+            dateInput.addEventListener("change", loadDoctors);
+            timeInput.addEventListener("change", loadDoctors);
+
+            loadDoctors();
+        });
+    </script>
+}

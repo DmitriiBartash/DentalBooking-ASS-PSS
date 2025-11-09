@@ -1,0 +1,6 @@
+@DentalBooking.Gateway_HostAddress = http://localhost:5236
+
+GET {{DentalBooking.Gateway_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

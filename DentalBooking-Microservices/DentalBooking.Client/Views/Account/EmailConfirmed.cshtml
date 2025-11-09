@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Email Confirmed";
+    Layout = null;
+}
+<head>
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/fontawesome/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/auth.css" />
+</head>
+
+<div class="auth-wrapper">
+    <div class="auth-card shadow-lg bg-white rounded text-center">
+        <div class="card-header bg-success text-white rounded-top">
+            <i class="fas fa-check-circle"></i>
+            <h3 class="mb-0">Email Confirmed!</h3>
+        </div>
+        <div class="card-body p-4">
+            <p>Your email has been successfully verified. You can now log in.</p>
+            <a href="/Account/Login" class="btn btn-login w-100">
+                <i class="fas fa-sign-in-alt me-2"></i> Go to Login
+            </a>
+        </div>
+    </div>
+</div>

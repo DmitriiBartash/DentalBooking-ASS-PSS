@@ -1,0 +1,40 @@
+﻿@page
+@model DentalBooking.Web.Pages.ConfirmEmailModel
+@{
+    ViewData["Title"] = "Email Confirmation";
+    Layout = null;
+}
+
+<head>
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/fontawesome/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/auth.css" />
+</head>
+
+<div class="auth-wrapper">
+    <div class="auth-card shadow-lg bg-white rounded">
+        <div class="card-header text-center bg-primary text-white rounded-top">
+            <i class="fas fa-envelope-open-text"></i>
+            <h3 class="mb-0">Email Confirmation</h3>
+        </div>
+
+        <div class="card-body text-center p-4">
+            @if (!string.IsNullOrEmpty(Model.StatusMessage))
+            {
+                <div class="alert alert-success mb-3">
+                    @Model.StatusMessage
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger mb-3">
+                    Something went wrong. Please try again.
+                </div>
+            }
+
+            <a class="btn btn-login w-100" href="/Login">
+                <i class="fas fa-sign-in-alt me-2"></i> Go to Login
+            </a>
+        </div>
+    </div>
+</div>

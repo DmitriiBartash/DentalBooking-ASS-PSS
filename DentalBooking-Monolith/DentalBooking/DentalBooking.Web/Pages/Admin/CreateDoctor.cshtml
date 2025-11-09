@@ -1,0 +1,70 @@
+﻿@page
+@model DentalBooking.Web.Pages.Admin.CreateDoctorModel
+@{
+    ViewData["Title"] = "Create Doctor";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-lg border-0 rounded-3">
+            <div class="card-header bg-dark text-white text-center py-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-user-md me-2"></i> Create Doctor
+                </h4>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="post">
+                    <div class="mb-3">
+                        <label asp-for="Input.FullName" class="form-label fw-bold"></label>
+                        <input asp-for="Input.FullName" class="form-control" />
+                        <span asp-validation-for="Input.FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Procedures (max 3)</label>
+                        <div class="form-check">
+                            @foreach (var proc in Model.AllProcedures)
+                            {
+                                <div>
+                                    <input type="checkbox"
+                                           class="form-check-input procedure-checkbox"
+                                           name="Input.SelectedProcedureIds"
+                                           value="@proc.Id"
+                                           id="proc_@proc.Id" />
+                                    <label class="form-check-label" for="proc_@proc.Id">
+                                        @proc.Name (@proc.Price.ToString("F2") MDL)
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                        <span asp-validation-for="Input.SelectedProcedureIds" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-3">
+                        <i class="fas fa-save me-2"></i> Save
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const checkboxes = document.querySelectorAll(".procedure-checkbox");
+            checkboxes.forEach(cb => {
+                cb.addEventListener("change", () => {
+                    const checked = document.querySelectorAll(".procedure-checkbox:checked");
+                    if (checked.length > 3) {
+                        cb.checked = false;
+                        alert("You can select up to 3 procedures only.");
+                    }
+                });
+            });
+        });
+    </script>
+}

@@ -1,0 +1,6 @@
+@DentalBooking.BookingService_HostAddress = http://localhost:5130
+
+GET {{DentalBooking.BookingService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

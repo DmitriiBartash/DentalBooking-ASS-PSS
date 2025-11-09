@@ -1,0 +1,6 @@
+@DentalBooking.NotificationService_HostAddress = http://localhost:5261
+
+GET {{DentalBooking.NotificationService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

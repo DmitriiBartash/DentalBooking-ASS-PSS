@@ -1,0 +1,216 @@
+﻿@model DentalBooking.Client.Models.ViewModels.Admin.DoctorsViewModel
+@{
+    ViewData["Title"] = "Doctors";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-lg border-0 rounded-3">
+            <div class="card-header bg-dark text-white text-center py-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-user-md me-2"></i> Doctors
+                </h4>
+            </div>
+
+            <div class="card-body p-4">
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">@Model.ErrorMessage</div>
+                }
+                @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+                {
+                    <div class="alert alert-success" role="alert">@Model.SuccessMessage</div>
+                }
+
+                <a class="btn btn-primary mb-3" asp-controller="Admin" asp-action="CreateDoctor">
+                    <i class="fas fa-plus"></i> Add Doctor
+                </a>
+
+                @if (Model.Doctors == null || !Model.Doctors.Any())
+                {
+                    <div class="alert alert-info text-center" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>No doctors found.
+                    </div>
+                }
+                else
+                {
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Specialty</th>
+                                <th scope="col">Procedures</th>
+                                <th scope="col" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var d in Model.Doctors)
+                            {
+                                <tr>
+                                    <td>@d.FullName</td>
+                                    <td>@d.Specialty</td>
+                                    <td>
+                                        @if (d.Procedures?.Any() == true)
+                                        {
+                                            @string.Join(", ", d.Procedures)
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No procedures</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-primary me-1"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editDoctorModal"
+                                                data-id="@d.Id"
+                                                data-firstname="@d.FullName.Split(' ').FirstOrDefault()"
+                                                data-lastname="@(d.FullName.Contains(' ') ? d.FullName.Split(' ').Last() : "")"
+                                                data-type="@d.Specialty"
+                                                data-procedures="@string.Join(',', d.Procedures ?? new List<string>())">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+
+                                        <form asp-controller="Admin" asp-action="DeleteDoctor"
+                                              method="post"
+                                              asp-route-id="@d.Id"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Delete this doctor?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editDoctorModal" tabindex="-1" aria-labelledby="editDoctorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="editDoctorModalLabel">
+                    <i class="fas fa-user-edit me-2"></i> Edit Doctor
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form asp-controller="Admin" asp-action="EditDoctor" method="post">
+                <div class="modal-body">
+                    <input type="hidden" id="editDoctorId" name="Id" />
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold" for="editFirstName">First Name</label>
+                            <input type="text" class="form-control" id="editFirstName" name="FirstName" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold" for="editLastName">Last Name</label>
+                            <input type="text" class="form-control" id="editLastName" name="LastName" required />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold" for="editType">Type</label>
+                        <select class="form-select" id="editType" name="Type" required>
+                            <option value="Therapist">Therapist</option>
+                            <option value="Surgeon">Surgeon</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Procedures</label>
+                        <div id="procedureList" class="row">
+                            @if (Model.Procedures != null && Model.Procedures.Any())
+                            {
+                                foreach (var p in Model.Procedures)
+                                {
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input edit-procedure"
+                                                   type="checkbox"
+                                                   value="@p.Id"
+                                                   name="SelectedProcedureIds"
+                                                   id="proc_@p.Id" />
+                                            <label class="form-check-label" for="proc_@p.Id">@p.Name</label>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted">No procedures available.</p>
+                            }
+                        </div>
+                        <small class="text-muted d-block mt-1">(You can assign up to 3 procedures)</small>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Save changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const editModal = document.getElementById('editDoctorModal');
+
+            if (editModal) {
+                editModal.addEventListener('show.bs.modal', event => {
+                    const button = event.relatedTarget;
+                    if (!button) return;
+
+                    const id = button.dataset.id;
+                    const firstName = button.dataset.firstname || '';
+                    const lastName = button.dataset.lastname || '';
+                    const type = (button.dataset.type || '').trim();
+                    const doctorProcedures = (button.dataset.procedures || '')
+                        .split(',')
+                        .map(p => p.trim())
+                        .filter(p => p.length > 0);
+
+                    document.getElementById('editDoctorId').value = id;
+                    document.getElementById('editFirstName').value = firstName;
+                    document.getElementById('editLastName').value = lastName;
+
+                    const typeSelect = document.getElementById('editType');
+                    [...typeSelect.options].forEach(opt => {
+                        opt.selected = opt.value.toLowerCase() === type.toLowerCase();
+                    });
+
+                    document.querySelectorAll('.edit-procedure').forEach(chk => {
+                        chk.checked = doctorProcedures.includes(chk.nextElementSibling.innerText.trim());
+                    });
+                });
+
+                document.querySelectorAll('.edit-procedure').forEach(chk => {
+                    chk.addEventListener('change', () => {
+                        const checked = document.querySelectorAll('.edit-procedure:checked').length;
+                        if (checked > 3) {
+                            chk.checked = false;
+                            alert('A doctor can have up to 3 procedures.');
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+}
+
