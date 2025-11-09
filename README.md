@@ -160,8 +160,6 @@ A distributed system where each service has its own business logic, database, an
    ```
    Application available at: **http://localhost:5184**
 
----
-
 ### Microservices Version
 1. Make sure **Docker** and **Docker Compose** are installed.  
 2. To start all services, run:
@@ -190,6 +188,15 @@ A distributed system where each service has its own business logic, database, an
 - Enhanced UI/UX with a modern frontend framework  
 - Cloud deployment with CI/CD pipelines  
 - Monitoring and alerting (Grafana, Prometheus)  
+
+---
+
+## 🧩 Diagrams
+
+### System Architecture
+![Microservices Architecture](docs/diagrams/microservices-architecture.jpg)
+
+---
 
 ## 📸 Screenshots
 
