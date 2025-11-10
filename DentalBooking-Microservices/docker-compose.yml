@@ -172,7 +172,7 @@ services:
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Username=guest
       - RabbitMQ__Password=guest
-      - EmailSettings__SmtpServer=smtp4dev
+      - EmailSettings__SmtpServer=dental_smtp4dev
       - EmailSettings__SmtpPort=25
       - EmailSettings__SenderAddress=noreply@dentalease.com
       - EmailSettings__SenderName=DentalEase

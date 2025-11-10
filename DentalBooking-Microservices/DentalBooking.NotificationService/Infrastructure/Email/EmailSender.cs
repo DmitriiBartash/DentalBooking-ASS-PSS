@@ -1,9 +1,8 @@
-﻿using System.Drawing;
-using System.Net.Mail;
+﻿using System.Net.Mail;
 
 namespace DentalBooking.NotificationService.Infrastructure.Email;
 
-public class EmailSender(ILogger<EmailSender> logger, IConfiguration config)
+public class EmailSender(ILogger<EmailSender> logger, IConfiguration config) : IEmailSender
 {
     private readonly ILogger<EmailSender> _logger = logger;
     private readonly IConfiguration _config = config;
@@ -65,8 +64,7 @@ public class EmailSender(ILogger<EmailSender> logger, IConfiguration config)
                     </div>
                 </div>
             </body>
-            </html>
-            ";
+            </html>";
 
             using var message = new MailMessage
             {
@@ -77,14 +75,14 @@ public class EmailSender(ILogger<EmailSender> logger, IConfiguration config)
             };
 
             message.To.Add(to);
-
             await smtp.SendMailAsync(message);
-            _logger.LogInformation("HTML Email sent successfully to {To} via Papercut SMTP", to);
+
+            _logger.LogInformation("Email sent successfully to {To} via SMTP ({Server}:{Port})",
+                to, smtpServer, smtpPort);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send email to {To}", to);
-            throw;
+            _logger.LogError(ex, "Error sending email to {To}", to);
         }
     }
 }

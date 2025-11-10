@@ -5,7 +5,11 @@ using DentalBooking.NotificationService.Infrastructure.Sms;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<EmailSender>();
+builder.Services.AddSingleton<IEmailSender, EmailSender>();
+builder.Services.Decorate<IEmailSender, LoggingEmailDecorator>();
+builder.Services.Decorate<IEmailSender, MetricsEmailDecorator>();
+builder.Services.Decorate<IEmailSender, RetryEmailDecorator>();
+
 builder.Services.AddSingleton<SmsSender>();
 builder.Services.AddSingleton<NotificationInvoker>();
 builder.Services.AddHostedService<RabbitConsumer>();
@@ -27,7 +31,7 @@ app.MapGet("/health", () => Results.Ok("Healthy"));
 
 using (var scope = app.Services.CreateScope())
 {
-    var emailSender = scope.ServiceProvider.GetRequiredService<EmailSender>();
+    var emailSender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
     var smsSender = scope.ServiceProvider.GetRequiredService<SmsSender>();
 
     await emailSender.SendAsync(
@@ -38,7 +42,7 @@ using (var scope = app.Services.CreateScope())
 
     await smsSender.SendAsync(
         "+37360000000",
-        "This is a test SMS from DentalEase Notification Service"
+        "This is a test SMS from DentalEase Notification Service."
     );
 }
 
