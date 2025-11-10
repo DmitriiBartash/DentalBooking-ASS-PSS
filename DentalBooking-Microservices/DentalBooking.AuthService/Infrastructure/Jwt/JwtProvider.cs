@@ -6,11 +6,6 @@ using System.Text;
 
 namespace DentalBooking.AuthService.Infrastructure.Jwt;
 
-public interface IJwtProvider
-{
-    string GenerateToken(ApplicationUser user);
-}
-
 public class JwtProvider(IConfiguration config) : IJwtProvider
 {
     private readonly IConfiguration _config = config;

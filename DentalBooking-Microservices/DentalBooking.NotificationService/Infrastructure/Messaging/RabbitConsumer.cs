@@ -5,8 +5,6 @@ using DentalBooking.NotificationService.Application.Dtos;
 using DentalBooking.NotificationService.Application.Invokers;
 using DentalBooking.NotificationService.Infrastructure.Email;
 using DentalBooking.NotificationService.Infrastructure.Sms;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -38,6 +36,7 @@ public class RabbitConsumer(ILogger<RabbitConsumer> logger, IServiceProvider ser
             {
                 var messageBody = Encoding.UTF8.GetString(ea.Body.ToArray());
                 var message = JsonSerializer.Deserialize<BookingCreatedMessage>(messageBody);
+
                 if (message is null)
                 {
                     _logger.LogWarning("Received null or invalid message from RabbitMQ");
@@ -47,15 +46,13 @@ public class RabbitConsumer(ILogger<RabbitConsumer> logger, IServiceProvider ser
                 _logger.LogInformation("Received BookingCreatedEvent for BookingId={BookingId}", message.BookingId);
 
                 using var scope = _services.CreateScope();
-                var emailSender = scope.ServiceProvider.GetRequiredService<EmailSender>();
+                var emailSender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
                 var smsSender = scope.ServiceProvider.GetRequiredService<SmsSender>();
-
                 var invoker = new NotificationInvoker();
 
                 if (!string.IsNullOrWhiteSpace(message.ClientEmail))
                 {
-                    invoker.SetCommand(new SendEmailCommand(emailSender, message.ClientEmail,
-                        "Booking Created", $"Your booking #{message.BookingId} is scheduled for {message.StartUtc:g}."));
+                    invoker.SetCommand(new SendEmailCommand(emailSender, message.ClientEmail, "Booking Created", $"Your booking #{message.BookingId} is scheduled for {message.StartUtc:g}."));
                     await invoker.ExecuteCommandAsync();
                 }
 

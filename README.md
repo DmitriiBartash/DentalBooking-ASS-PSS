@@ -99,9 +99,10 @@ A distributed system where each service has its own business logic, database, an
 ---
 
 ### NotificationService  
-**Command**  
-- Implements **Command** to encapsulate email/SMS notification logic.  
-- Commands: `SendEmailCommand`, `SendSmsCommand`, executed via `NotificationInvoker`.  
+**Command** + **Decorator**  
+- Implements **Command** to encapsulate email and SMS notification logic via NotificationInvoker.
+- Commands: SendEmailCommand, SendSmsCommand — executed when a booking event is received.
+- Uses **Decorator** to extend EmailSender with logging, metrics, and retry behavior.
 - Acts as a RabbitMQ subscriber, reacting to `BookingCreatedEvent` messages.  
 
 ---
@@ -132,6 +133,7 @@ A distributed system where each service has its own business logic, database, an
 | 8 | Mediator | BookingService | Coordinates booking operations |
 | 9 | Observer | BookingService | Publishes and reacts to booking events |
 | 10 | Command | NotificationService | Encapsulates notification actions |
+| 11 | Decorator | NotificationService | Extends EmailSender with logging, metrics, and retry behavior |
 
 ---
 
