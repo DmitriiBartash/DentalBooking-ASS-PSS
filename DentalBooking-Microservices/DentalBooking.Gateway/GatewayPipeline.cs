@@ -24,6 +24,9 @@ namespace DentalBooking.Gateway
 
         public async Task ExecuteAsync(HttpContext context)
         {
+            var path = context.Request.Path.Value?.ToLowerInvariant();
+            if (path == "/health") return;
+
             await _first.HandleAsync(context);
         }
     }

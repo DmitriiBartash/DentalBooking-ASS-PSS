@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   auth_postgres:
     image: postgres:16
@@ -103,10 +105,11 @@ services:
       - dental_net
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/health || exit 1"]
       interval: 10s
-      timeout: 3s
+      timeout: 5s
       retries: 5
+      start_period: 15s
 
   doctorservice:
     build:
@@ -125,10 +128,11 @@ services:
       - dental_net
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/health || exit 1"]
       interval: 10s
-      timeout: 3s
+      timeout: 5s
       retries: 5
+      start_period: 15s
 
   bookingservice:
     build:
@@ -152,10 +156,11 @@ services:
       - dental_net
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/health || exit 1"]
       interval: 10s
-      timeout: 3s
+      timeout: 5s
       retries: 5
+      start_period: 15s
 
   notificationservice:
     build:
@@ -182,10 +187,11 @@ services:
       - dental_net
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 60s
-      timeout: 3s
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 5s
       retries: 5
+      start_period: 20s
 
   gateway:
     build:
@@ -207,10 +213,11 @@ services:
       - dental_net
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/health || exit 1"]
       interval: 10s
-      timeout: 3s
-      retries: 5
+      timeout: 5s
+      retries: 8
+      start_period: 20s
 
   client:
     build:
@@ -228,16 +235,74 @@ services:
       - dental_net
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080 || exit 1"]
       interval: 10s
-      timeout: 3s
+      timeout: 5s
       retries: 5
+      start_period: 15s
+
+  influxdb:
+    image: influxdb:1.8
+    container_name: dental_influxdb
+    environment:
+      - INFLUXDB_DB=k6
+      - INFLUXDB_ADMIN_ENABLED=true
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+    networks:
+      - dental_net
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8086/ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  grafana:
+    image: grafana/grafana
+    container_name: dental_grafana
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - dental_net
+    restart: always
+
+  k6:
+    image: grafana/k6
+    container_name: dental_k6
+    depends_on:
+      gateway:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
+    environment:
+      - K6_OUT=influxdb=http://influxdb:8086/k6
+    volumes:
+      - ./Tests/k6/scripts/loadtest.js:/loadtest.js:ro
+    command: ["run", "/loadtest.js"]
+    networks:
+      - dental_net
+    profiles:
+      - tests
 
 volumes:
   auth_pgdata:
   doctor_pgdata:
   booking_pgdata:
   rabbitmq_data:
+  influxdb_data:
+  grafana_data:
 
 networks:
   dental_net:

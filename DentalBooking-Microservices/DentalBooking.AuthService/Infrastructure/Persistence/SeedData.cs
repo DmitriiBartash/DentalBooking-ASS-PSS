@@ -22,29 +22,31 @@ public static class SeedData
                 {
                     var result = await roleManager.CreateAsync(new IdentityRole(role));
                     if (!result.Succeeded)
+                    {
                         logger.LogError("Failed to create role {Role}: {Errors}",
                             role, string.Join(", ", result.Errors.Select(e => e.Description)));
+                    }
                     else
+                    {
                         logger.LogInformation("Role created: {Role}", role);
+                    }
                 }
             }
 
-            // Admin
             await EnsureUserAsync(userManager, config, logger,
                 emailKey: "Seed:AdminEmail",
                 passwordKey: "Seed:AdminPassword",
-                defaultEmail: "admin@auth.local",
+                defaultEmail: "admin@dental.local",
                 defaultPassword: "Admin123!",
                 firstName: "System",
                 lastName: "Administrator",
                 phone: "+37360000000",
                 role: "Admin");
 
-            // Doctors
             var doctors = new[]
             {
-                new { Email = "doctor@auth.local", FirstName = "John", LastName = "Doe", Phone = "+37360000001" },
-                new { Email = "doctor2@auth.local", FirstName = "Emily", LastName = "Carter", Phone = "+37360000002" }
+                new { Email = "doctor1@dental.local", FirstName = "John", LastName = "Doe", Phone = "+37360000001" },
+                new { Email = "doctor2@dental.local", FirstName = "Emily", LastName = "Carter", Phone = "+37360000002" }
             };
 
             foreach (var doc in doctors)
@@ -60,11 +62,10 @@ public static class SeedData
                     role: "Doctor");
             }
 
-            // Clients
             var clients = new[]
             {
-                new { Email = "client1@auth.local", FirstName = "Alice", LastName = "Green", Phone = "+37360000003" },
-                new { Email = "client2@auth.local", FirstName = "Bob", LastName = "Brown", Phone = "+37360000004" }
+                new { Email = "client1@dental.local", FirstName = "Alice", LastName = "Green", Phone = "+37360000003" },
+                new { Email = "client2@dental.local", FirstName = "Bob", LastName = "Brown", Phone = "+37360000004" }
             };
 
             foreach (var c in clients)

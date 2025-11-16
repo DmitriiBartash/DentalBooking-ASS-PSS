@@ -37,6 +37,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseRouting();
 
+app.MapGet("/health", () => Results.Ok("Healthy"));
+
 app.UseAuthentication();
 app.UseAuthorization();
 
