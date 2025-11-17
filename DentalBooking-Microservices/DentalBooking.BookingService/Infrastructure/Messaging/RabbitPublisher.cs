@@ -40,6 +40,6 @@ public class RabbitPublisher : IRabbitPublisher
             body: body
         );
 
-        _logger.LogInformation("📨 [RabbitMQ] Published event '{Type}'", type);
+        _logger.LogInformation("[RabbitMQ] Published event '{Type}'", type);
     }
 }
