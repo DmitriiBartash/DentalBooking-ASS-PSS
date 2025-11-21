@@ -52,8 +52,13 @@ Implements a **Layered Architecture + CQRS** approach, with a clean separation b
 - `DentalBooking.Infrastructure` — EF Core, migrations, repositories  
 - `DentalBooking.Web` — Razor Pages, Identity, Bootstrap 5  
 
-**Key Technologies:**  
-ASP.NET Core 9, Entity Framework Core (Code First + SQLite), CQRS, MediatR, FluentValidation  
+**Key Technologies:**
+
+- **ASP.NET Core 9** — web framework for building modern applications  
+- **Entity Framework Core** — ORM with Code-First and SQLite support  
+- **CQRS** — separation of read/write operations  
+- **MediatR** — in-process message dispatching for commands and queries  
+- **FluentValidation** — strong validation layer for commands and DTOs
 
 ---
 
@@ -146,6 +151,7 @@ A distributed system where each service has its own business logic, database, an
 - **Docker & Docker Compose** — containerization and orchestration of all services  
 - **SMTP4Dev** — local SMTP server for testing email notifications  
 - **Swagger (OpenAPI)** — auto-generated API documentation for all microservices  
+- **k6 + Grafana** — load testing and real-time performance monitoring for both architectures  
 
 ---
 
@@ -180,11 +186,22 @@ A distributed system where each service has its own business logic, database, an
 
 ---
 
+## 🧪 Load Testing
+
+The project includes load testing for both architectures:
+
+- **Microservices:** showed low latency and high throughput across API Gateway, service endpoints, and RabbitMQ event flow.  
+- **Monolith:** executed the same scenarios with stable behavior but higher response times due to shared resources.
+
+Load testing was performed using **k6**, enabling a direct comparison of system performance under identical stress conditions.
+
+---
+
 ## 🔮 Future Improvements
 
 - Load balancing and caching in API Gateway  
 - Centralized logging and distributed tracing  
-- Unit, integration, and load testing for all services  
+- Unit and integration testing for all services  
 - Replace SMTP4Dev and test SMS sending with real providers (SendGrid, Gmail, Twilio, etc.)  
 - Doctor availability calendar with time slots  
 - Enhanced UI/UX with a modern frontend framework  
@@ -234,6 +251,20 @@ A distributed system where each service has its own business logic, database, an
 
 #### Bookings
 ![Admin Bookings](docs/screenshots/admin/bookings.png)
+
+---
+
+### Load Testing
+
+#### Monolith
+![Monolith Load Test](docs/loadtesting/monolith/monolith-loadtesting.png)
+
+#### Microservices
+![Microservices Load Test](docs/loadtesting/microservices/microservices-loadtesting.png)
+
+#### Grafana Dashboard
+![Grafana Load Test](docs/loadtesting/microservices/grafana-loadtesting.png)
+
 
 
 
