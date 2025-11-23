@@ -88,10 +88,32 @@ public class AccountController(IApiFacade apiFacade) : Controller
         };
 
         var result = await apiFacade.Auth.RegisterAsync(payload);
+
         if (result == null)
         {
             model.ErrorMessage = "Registration failed. Please check your data.";
             return View(model);
+        }
+
+        var loginPayload = new { email = model.Email, password = model.Password };
+        var authResult = await apiFacade.Auth.LoginAsync(loginPayload);
+
+        if (authResult != null && !string.IsNullOrEmpty(authResult.Token))
+        {
+            Response.Cookies.Append("AuthToken", authResult.Token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddHours(2)
+            });
+
+            return authResult.Role switch
+            {
+                "Admin" => RedirectToAction("Reports", "Admin"),
+                "Client" => RedirectToAction("CreateBooking", "Client"),
+                _ => RedirectToAction(nameof(Login))
+            };
         }
 
         TempData["SuccessMessage"] = "Account created successfully! Please log in.";

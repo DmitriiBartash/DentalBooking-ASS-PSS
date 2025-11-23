@@ -52,6 +52,9 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<IJwtProvider, JwtProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ClientUserCreator>();
+builder.Services.AddScoped<AdminUserCreator>();
+builder.Services.AddScoped<DoctorUserCreator>();
 builder.Services.AddScoped<UserCreatorSelector>();
 
 builder.Services.AddControllers();
